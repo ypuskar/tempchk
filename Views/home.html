@@ -1,0 +1,128 @@
+<!doctype html>
+<html dir="ltr" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>Home Controller</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" type="text/javascript"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+<div style="text-align: center">
+	<div class="jumbotron">
+		<h1>Home Controller</h1>
+		<p>Control the heating, TV, light and alarm settings by using the buttons 
+		below. </p>
+		<h3 id="result"></h3>
+	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-3">
+				<h4>Heating</h4>
+				<p>Switch Heating On/Off</p>
+			</div>
+			<div class="col-xs-3">
+				<h4>TV </h4>
+				<p>Switch TV On/Off </p>
+			</div>
+			<div class="col-xs-3">
+				<h4>Room Light</h4>
+				<p>Switch Room Light</p>
+			</div>
+			<div class="col-xs-3">
+				<h4>Alarm</h4>
+				<p>Switch Alarm on/off </p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-3">
+				<p>
+				<input id="heat" class="btn btn-warning btn-md" onclick="postRequest('heat')" type="button" value="Heating"></p>
+			</div>
+			<div class="col-xs-3">
+				<p>
+				<input id="tv" class="btn btn-primary btn-md" onclick="postRequest('tv')" type="button" value="  TV  "></p>
+			</div>
+			<div class="col-xs-3">
+				<p>
+				<input id="light" class="btn btn-primary btn-md" onclick="postRequest('light')" type="button" value="Light"></p>
+			</div>
+			<div class="col-xs-3">
+				<p>
+				<input id="alarm" class="btn btn-danger btn-md" onclick="postRequest('alarm')" type="button" value="Alarm"></p>
+			</div>
+		</div>
+	</div>
+</div>
+<hr>
+<script type="text/javascript">
+if(typeof(EventSource) !== "undefined") {
+    var source = new EventSource("./sse");
+    source.onmessage = function(event) {
+		document.getElementById("result").innerHTML = parseTemp(JSON.parse(event.data));
+		//console.log(event.data);
+		/*"Temperature 1 "+ JSON.parse(event.data)[0]
+		+" &#176;C" + "</br>Temperature 2 "+  JSON.parse(event.data)[1]+" &#176;C" ;*/
+		//console.log(JSON.parse(event.data));
+    };
+} else {
+    document.getElementById("result").innerHTML = "The browser does not support updating the temperature";
+}
+function parseTemp(tempObject) {
+	//console.log(tempObject);
+	var returnObject = '';
+	for (var property1 in tempObject) {
+		returnObject += '<li>' + mapProperty(property1) + 
+			' ' + tempObject[property1].temp + 
+			' Heat: ' + tempObject[property1].heat + '</li>';
+			//console.log(returnObject);
+	};
+	return '<ul>' + returnObject + '</ul>';
+}
+function postRequest(id) {
+var x=  document.getElementById(id);
+x.disabled = true;
+//disable the button for a short time to avoid spurious posts
+setTimeout(function(){ x.disabled=false }, 750);
+var xhr = new XMLHttpRequest();
+xhr.open('POST', "./"+id, true);
+xhr.timeout = 2500; // time in milliseconds
+xhr.send();
+xhr.ontimeout = function (e) {
+  // XMLHttpRequest timed out.
+ alert("Request timed out");
+};
+}
+function mapProperty(property) {
+	var ruum = '';
+	switch(property) {
+		case '28-0517c3a351ff':
+        	ruum = 'Garaaž:';
+        	break;
+      	case '28-0417c2a85dff':
+	  		ruum = 'Eesruum:';
+        	break;
+      	case '28-0417c28ee3ff':
+	  		ruum = 'Õues:';
+        	break;
+      	case '28-0417c2da95ff':
+	  		ruum = 'Leiliruum:';
+			break;
+	  	case '28-000007d4684f':
+	  		ruum = 'Test:';
+        	break;
+	}
+	return ruum;
+}
+
+	
+
+
+</script>
+
+</body>
+
+</html>
