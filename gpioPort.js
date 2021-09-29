@@ -4,30 +4,30 @@ if(config.NODE_ENV=='debug') {
   var wpi = require('./wiring-piMock');
 }
 else {
-  var wpi = require('wiringpi-node');
+  var wpi = require('rpio');
 }
 
 var TaskQueue = require('./TaskQueue');
  var taskQueue = new TaskQueue(pulsePin);
 //Associate pin numbers with their
 //physical position on the chip
-wpi.setup('phys');
+//wpi.init('phys');
 //set temperature sensor pin to input mode
-wpi.pinMode(ONE_WIRE,wpi.INPUT);
+wpi.open(ONE_WIRE,wpi.INPUT); //pinMode
 //set temperature sensor pin's pull up resistor
-wpi.pullUpDnControl (ONE_WIRE, wpi.PUD_UP) ;
+wpi.pud(ONE_WIRE, wpi.PULL_UP) ;
 
 function setGpioPins(portDictionary) {
   for (var key in portDictionary) {
     //configure all pins as outputs
-    wpi.pinMode(portDictionary[key], wpi.OUTPUT);
+    wpi.mode(portDictionary[key], wpi.OUTPUT); //pinMode
   }
 }
 
 function pulsePin(taskParams,cb) {
-  wpi.digitalWrite(taskParams.Pin, wpi.HIGH);
+  wpi.write(taskParams.Pin, wpi.HIGH); //digitalWrite
   setTimeout(function () {
-    wpi.digitalWrite(taskParams.Pin, wpi.LOW);
+    wpi.write(taskParams.Pin, wpi.LOW);
     cb();
   }, taskParams.Delay);
 }

@@ -5,50 +5,19 @@ var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var pg = require('pg');
 var app = express();
-var gpio = require('./gpioPort');
+//var gpio = require('./gpioPort');
 var config = require('./config.json');
 var handlers = require('./handlers/handlers');
 const jsn = express.json();
 //All JS and CSS files are in the Scripts folder.
 
-/*var pool = new pg.Pool({
-    port: 5432,
-    user: 'pi',
-    password: 'ReheAhi1965',
-    database: 'Temp_history',
-    max: 10,
-    host: '192.168.1.43'
-});*/
+
 const ServerStartTime = (() => {
     var sTime = new Date();
     return () => {return sTime};
 } )();
 
 
-
-// the pool with emit an error on behalf of any idle clients
-// it contains if a backend error or network partition happens
-/*pool.on('error', (err, client) => {
-    console.error('Unexpected error on idle client', err)
-    process.exit(-1)
-  })
-  */
-/*pool.connect((err, db, done) => {
-    if(err) {
-        return console.log(err);
-    } else {
-        db.query('SELECT Count(*) FROM public."History";', (err, table) => {
-            done();
-            if(err) {
-                console.log(err);
-            } else {
-                console.log(table.rows);
-                //db.end();
-            }
-        })
-    }
-})
-*/
 handlers.historyCount();
 handlers.heatperiodCount();
 
@@ -57,7 +26,7 @@ handlers.heatperiodCount();
 
 app.use(morgan('dev'));
 
-app.use(express.static(__dirname + '/Scripts'));
+app.use(express.static(__dirname + '/build'));
 
 //add cors
 app.use(function(req, res, next) {
@@ -68,8 +37,8 @@ app.use(function(req, res, next) {
 
 //this is a json object used as a key/value dictionary
 //to associate descriptive words with  gpio pin numbers
-var portDictionary = { alarm: 11, heat: 12, light: 13, tv: 14 };
-gpio.setGpioPins(portDictionary);
+//var portDictionary = { alarm: 11, heat: 12, light: 13, tv: 14 };
+//gpio.setGpioPins(portDictionary);
 //750 millisecs
 var pulseLength = 25;
 
@@ -130,7 +99,7 @@ app.get('/period/:times', (req, res) => {
 });
 
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/Views/home.html');
+    res.sendFile(__dirname + '/build/index.html');
 
 });
 

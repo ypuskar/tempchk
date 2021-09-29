@@ -125,28 +125,7 @@ function writeMessage(res) {
 
   }
 
-/*  sensor.getAll(function (err, temp) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    //console.log(temp);
-    if ( ledswitch === false  &&  temp[1] >= maxTemp ) {
-      ledswitch = true;
-      //console.log('LEDON');
 
-      blinkInterval = setInterval(blinkLED, 500); //run the blinkLED function every 250ms
-      //console.log(typeof blinkInterval);
-    } else if (ledswitch === true && (temp[1] < maxTemp ) ){
-      //console.log('LEDOFF ' + temp[1]);
-      ledswitch = false;
-
-      endBlink();
-    }
-    //console.log( temp[0] );
-    
-    
-  });*/
 }
 
 //The response object is actually a stream and has

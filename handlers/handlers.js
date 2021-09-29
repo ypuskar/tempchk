@@ -2,17 +2,40 @@ var Db = require('../db/db');
 //var express = require('express');
 //var app = express();
 
-exports.historyCount = () => {
+exports.historyCount = async () => {
+    try {
+        const result = await Db.query('SELECT Count(*) FROM public."History";');
+        if (result.rows.length){
+            console.log(result.rows)
+            return;
+        } else {
+            console.log('NO History')
+            return;
+        }
+    } catch (error) {
+        console.error(error.message)
+        return ;
+    }
     
-    Db.query('SELECT Count(*) FROM public."History";');
+
 }
 
-exports.heatperiodCount = () => {
-    Db.query('SELECT Count(*) FROM public."Heatperiod";');
+exports.heatperiodCount = async () => {
+    try {
+        const result = await Db.query('SELECT Count(*) FROM public."Heatperiod";');
+        if (result.rows.length){
+            return result.rows;
+        } else {
+            return []
+        }
+    } catch (error) {
+        return console.error(error.message);
+    }
+    
     
 }
 //insert heat period into db
-exports.insertHeatPeriod = (HeatObject) => {
+exports.insertHeatPeriod = async (HeatObject) => {
     if (Object.getOwnPropertyNames(HeatObject).length !== 0) {
         //console.log(HeatObject);
         var tempValues = [];
@@ -21,19 +44,11 @@ exports.insertHeatPeriod = (HeatObject) => {
             
         }
 
-        Db.query('INSERT INTO public."Heatperiod"('+
+        await Db.query('INSERT INTO public."Heatperiod"('+
         '"Period", "Start",'+
         '"End", '+
         '"Room"'+
-        ') VALUES($1, $2, $3, $4);', tempValues, (err, table) => {
-
-            if(err) {
-                console.log(err);
-            } else {
-                //console.log(table.rows);
-                //db.end();
-            }
-        });
+        ') VALUES($1, $2, $3, $4);', tempValues);
         //db.end();
 
 
@@ -41,7 +56,7 @@ exports.insertHeatPeriod = (HeatObject) => {
 
 }
 //inserts temp readings into db
-exports.insertHistory = (tempObject) => {
+exports.insertHistory = async (tempObject) => {
     if (Object.getOwnPropertyNames(tempObject).length !== 0) {
         var tempValues = [];
         for (var prop in tempObject) {
@@ -49,20 +64,12 @@ exports.insertHistory = (tempObject) => {
             
         }
         //console.log(tempObject);
-        Db.query('INSERT INTO public."History"('+
+        await Db.query('INSERT INTO public."History"('+
         '"Temp_garaaz", "Kyte_garaaz",'+
         '"Temp_Leiliruum", '+
         '"Temp_Eesruum", "Kyte_eesruum",'+
         '"Temp_valjas"'+
-        ') VALUES($1, $2, $3, $4, $5, $6);', tempValues, (err, table) => {
-
-            if(err) {
-                console.log(err);
-            } else {
-                //console.log('INSERTED');
-                //db.end();
-            }
-        }) 
+        ') VALUES($1, $2, $3, $4, $5, $6);', tempValues) 
         //db.end();
         
 
@@ -71,66 +78,85 @@ exports.insertHistory = (tempObject) => {
 }
 
 //get temps from db
-exports.getTemps = (req, res) => {
+exports.getTemps = async (req, res) => {
 
     if(Object.keys(req.query).length !== 0 ) {
         var StartInterval = req.query.page*req.query.limit;
         var EndInterval = req.query.page*req.query.limit+parseInt(req.query.limit);
+        try {
+            const result = await Db.query('SELECT * FROM public."History" '+
+            'Where "TimeStamp" Between now() - interval \''+EndInterval+
+            ' days\' And now() - interval \''+StartInterval+' days\' Order by "Id";')
 
-        Db.query('SELECT * FROM public."History" '+
-        'Where "TimeStamp" Between now() - interval \''+EndInterval+
-        ' days\' And now() - interval \''+StartInterval+' days\' Order by "Id";','', (err, table) => {
-
-            if(err) {
-                return res.status(400).send(err);
-            } else {
-                return res.status(200).send(table.rows);
-                //db.end();
-            }
-        })
-    }  else {         
-        Db.query('SELECT * FROM public."History" LIMIT 10;','', (err, table) => {
-
-        if(err) {
-            return res.status(400).send(err);
-        } else {
-            return res.status(200).send(table.rows);
-            //db.end();
+                if(result.rows.length) {
+                    return res.status(200).json(result.rows);
+                } else {
+                    
+                    return res.status(400).send('Not found');
+                }
+            
+        } catch (error) {
+            return res.status(403).send(error);
         }
-    })
+
+        
+    }  else {
+        try {
+            const result = await Db.query('SELECT * FROM public."History" LIMIT 10;')
+
+                if(result.rows.length) {
+                    return res.status(200).json(result.rows);
+                } else {
+                    
+                    return res.status(400).send('Not found');
+                }
+            
+        } catch (error) {
+            return res.status(403).send(error);
+        }
     }
 }
 
-exports.getPeriod = (req, res) => {
+exports.getPeriod = async (req, res) => {
 
-    console.log(req.query);
+    //console.log(req.query);
 
     if(Object.keys(req.query).length !== 0 ) {
         var StartInterval = req.query.page*req.query.limit;
         var EndInterval = req.query.page*req.query.limit+parseInt(req.query.limit);
 
-        console.log(StartInterval,'  ',EndInterval);
+        //console.log(StartInterval,'  ',EndInterval);
+        
+        try {
+            const result = await Db.query('SELECT * FROM public."Heatperiod" '+
+            'Where "TimeStamp" Between now() - interval \''+EndInterval+
+            ' days\' And now() - interval \''+StartInterval+' days\' Order by "Id";')
 
-        Db.query('SELECT * FROM public."Heatperiod" '+
-        'Where "TimeStamp" Between now() - interval \''+EndInterval+
-        ' days\' And now() - interval \''+StartInterval+' days\' Order by "Id";','', (err, table) => {
-
-            if(err) {
-                return res.status(400).send(err);
-            } else {
-                return res.status(200).send(table.rows);
-                //db.end();
-            }
-        })
-    }  else {         
-        Db.query('SELECT * FROM public."Heatperiod" LIMIT 10;','', (err, table, res) => {
-
-        if(err) {
-            return res.status(400).send(err);
-        } else {
-            return res.status(200).send(table.rows);
-            //db.end();
+                if(result.rows.length) {
+                    return res.status(200).json(result.rows);
+                } else {
+                    
+                    return res.status(400).send('Not found');
+                }
+            
+        } catch (error) {
+            return res.status(403).send(error);
         }
-    })
+
+    }  else {         
+        try {
+            const result = await Db.query('SELECT * FROM public."Heatperiod" LIMIT 10;')
+
+                if(result.rows.length) {
+                    return res.status(200).json(result.rows);
+                } else {
+                    
+                    return res.status(400).send('Not found');
+                }
+            
+        } catch (error) {
+            return res.status(403).send(error);
+        }
+
     }
 }
