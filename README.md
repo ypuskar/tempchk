@@ -1,4 +1,4 @@
-﻿#Project description
+﻿## Project description
 
 App for Rasperry Pi to read temperatures from 4 sensors and switch heating through relay
 
