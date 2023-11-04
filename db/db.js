@@ -2,8 +2,8 @@ const  pg  = require('pg');
 
 var pool = new pg.Pool({
     port: 5432,
-    user: 'pi',
-    password: 'ReheAhi1965',
+    user: 'user',
+    password: 'KaminaSimss1965',
     database: 'pi',
     max: 10,
     host: '192.168.1.43'

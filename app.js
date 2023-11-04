@@ -17,7 +17,7 @@ const ServerStartTime = (() => {
     return () => {return sTime};
 } )();
 
-
+console.log(`Starting at ${ServerStartTime()}`)
 handlers.historyCount();
 handlers.heatperiodCount();
 
@@ -73,7 +73,8 @@ app.get('/sse', function (req, res) {
         }
 
     } else {
-        res.writeHead(404).send('Subscription error');
+        res.status(404)
+        res.send('Subscription error');
         res.end();
     }
 });
